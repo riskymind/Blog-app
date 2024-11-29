@@ -287,3 +287,106 @@ class ReadLaterViewTest(TestCase):
             list(response.context['posts']),
             [self.post1, self.post2, self.post3]
         )
+
+# Test the Blog App Models
+class BlogModelTests(TestCase):
+    def setUp(self):
+        # Create tags
+        self.tag1 = Tag.objects.create(caption="Django")
+        self.tag2 = Tag.objects.create(caption="Python")
+
+        # Create an author
+        self.author = Author.objects.create(
+            first_name="John",
+            last_name="Doe",
+            email_address="john.doe@example.com"
+        )
+
+        # Create a post
+        self.post = Post.objects.create(
+            title="Test Post",
+            excerpt="This is a test excerpt.",
+            image="test_image.jpg",
+            slug="test-post",
+            content="This is the content of the test post.",
+            author=self.author
+        )
+        self.post.tags.add(self.tag1, self.tag2)
+
+        # Add a comment to the post
+        self.comment = Comment.objects.create(
+            user_name="Jane Smith",
+            user_email="jane.smith@example.com",
+            text="This is a test comment.",
+            post=self.post
+        )
+
+    def test_author_full_name(self):
+        self.assertEqual(self.author.full_name(), "John Doe")
+
+    def test_post_str(self):
+        self.assertEqual(str(self.post), "Test Post")
+
+    def test_tag_str(self):
+        self.assertEqual(str(self.tag1), "Django")
+
+    def test_comment_str(self):
+        self.assertEqual(self.comment.text, "This is a test comment.")
+
+    def test_post_has_tags(self):
+        tags = self.post.tags.all()
+        self.assertIn(self.tag1, tags)
+        self.assertIn(self.tag2, tags)
+
+    def test_post_author(self):
+        self.assertEqual(self.post.author, self.author)
+
+    def test_comment_association_with_post(self):
+        self.assertEqual(self.comment.post, self.post)
+
+
+# Testing the comment Form
+class CommentFormTests(TestCase):
+    def setUp(self):
+        # Sample valid data for the form
+        self.valid_data = {
+            "user_name": "Jane Doe",
+            "user_email": "jane.doe@example.com",
+            "text": "This is a test comment."
+        }
+
+        # Sample invalid data
+        self.invalid_data_missing_name = {
+            "user_name": "",
+            "user_email": "jane.doe@example.com",
+            "text": "This is a test comment."
+        }
+        self.invalid_data_invalid_email = {
+            "user_name": "Jane Doe",
+            "user_email": "invalid-email",
+            "text": "This is a test comment."
+        }
+
+    def test_form_valid_data(self):
+        form = CommentForm(data=self.valid_data)
+        self.assertTrue(form.is_valid())  # Form should be valid with valid data
+        comment = form.save(commit=False)  # Test that form saves correctly
+        self.assertEqual(comment.user_name, "Jane Doe")
+        self.assertEqual(comment.user_email, "jane.doe@example.com")
+        self.assertEqual(comment.text, "This is a test comment.")
+
+    def test_form_missing_name(self):
+        form = CommentForm(data=self.invalid_data_missing_name)
+        self.assertFalse(form.is_valid())  # Form should be invalid
+        self.assertIn("user_name", form.errors)  # Check if error exists for user_name
+
+    def test_form_invalid_email(self):
+        form = CommentForm(data=self.invalid_data_invalid_email)
+        self.assertFalse(form.is_valid())  # Form should be invalid
+        self.assertIn("user_email", form.errors)  # Check if error exists for user_email
+
+    def test_form_labels(self):
+        form = CommentForm()
+        self.assertEqual(form.fields["user_name"].label, "Your Name")
+        self.assertEqual(form.fields["user_email"].label, "Your Email")
+        self.assertEqual(form.fields["text"].label, "Your Comment")
