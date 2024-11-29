@@ -46,14 +46,12 @@ class StartingPageView(ListView):
         queryset = super().get_queryset()
         data = queryset[:3]
         return data
-    
-    
+        
 class AllPostsView(ListView):
     template_name = "blog/all-posts.html"
     model = Post
     ordering = ["-date"]
     context_object_name = "posts"
-
 
 class SinglePostView(View):
 
