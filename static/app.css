@@ -30,7 +30,7 @@ h3 {
     align-items: center;
     justify-content: space-between;
     padding: 0 10%;
-    position: sticky;
+    position: absolute;
     top: 0;
     left: 0;
 }
@@ -39,6 +39,7 @@ h3 {
     text-decoration: none;
     color: white;
     font-weight: bold;
+    margin: 0 1rem;
 }
 
 #main-navigation a:hover,
